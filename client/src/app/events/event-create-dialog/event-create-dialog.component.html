@@ -1,0 +1,98 @@
+<h1 mat-dialog-title>{{isEditingEvent ? 'Edit Event': 'Create Event'}}</h1>
+
+<section mat-dialog-content class="mat-typography">
+    <form (ngSubmit)="createEvent()" #createEventForm="ngForm">
+        <div class="form-group">
+            <mat-form-field color="accent">
+                <mat-label>Name</mat-label>
+                <input matInput [(ngModel)]="event.name" name="name" required pattern=".*\S+.*" autocomplete="off">
+                <mat-error>Name is a required field</mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form-group">
+            <mat-form-field color="accent">
+                <mat-label>Description</mat-label>
+                <textarea #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="1" cdkAutosizeMaxRows="5"
+                    cdkTextareaAutosize matInput [(ngModel)]="event.description" name="description" required
+                    pattern=".*\S+.*" autocomplete="off"></textarea>
+                <mat-error>Description is a required field</mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form-group">
+            <mat-form-field color="accent">
+                <mat-label>Date & Time Range</mat-label>
+                <input matInput name="eventDateRange" [min]="minDate" [(ngModel)]="eventDateRange"
+                    [owlDateTime]="eventDateTime" [selectMode]="'range'" [rangeSeparator]="'-'" required
+                    [errorStateMatcher]="dateRangeErrorMatcher" autocomplete="off">
+                <owl-date-time #eventDateTime [hour12Timer]="true" [panelClass]="'owl-date-picker-custom-container'">
+                </owl-date-time>
+                <mat-icon matSuffix>
+                    <span class="date-time-picker-icon" [owlDateTimeTrigger]="eventDateTime"><i
+                            class="fas fa-calendar-alt"></i></span>
+                </mat-icon>
+                <mat-error>Please select a range where the start date is before end date</mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form-group">
+            <mat-form-field color="accent">
+                <mat-label>Location</mat-label>
+                <input matInput [(ngModel)]="event.location" name="location" required pattern=".*\S+.*"
+                    autocomplete="off">
+                <mat-error>Location is a required field</mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form-group">
+            <mat-form-field color="accent">
+                <mat-label>Fandom Category</mat-label>
+                <mat-select id="category" name="category" (selectionChange)="categoryChange($event)"
+                    [(ngModel)]="event.fandom.category.name" required>
+                    <mat-option>--Select Category--</mat-option>
+                    <mat-option *ngFor="let category of categories" [value]="category.name">
+                        {{category.name | titlecase}}
+                    </mat-option>
+                </mat-select>
+                <mat-error>Fandom Category is a required field</mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form-group">
+            <mat-form-field color="accent">
+                <mat-label>Fandom</mat-label>
+                <mat-select name="fandom" (selectionChange)="fandomChange($event)" [(ngModel)]="event.fandom.name"
+                    required [disabled]="!event.fandom.category">
+                    <mat-option>--Select Fandom--</mat-option>
+                    <mat-option *ngFor="let fandom of fandomsForCategory" [value]="fandom.name">
+                        {{fandom.name | titlecase}}
+                    </mat-option>
+                </mat-select>
+                <mat-error>Fandom is a required field</mat-error>
+            </mat-form-field>
+        </div>
+    </form>
+
+    <span class="error">{{errorMsg}}</span>
+</section>
+
+<mat-dialog-actions align="end">
+    <button mat-flat-button mat-dialog-close color="basic" [disabled]="isLoading">Cancel</button>
+    <button mat-flat-button color="primary" *ngIf="!isEditingEvent" (click)="createEventForm.ngSubmit.emit()"
+        [disabled]="!createEventForm.form.valid || isLoading">
+        <div class="flex-row-container-space-between">
+            <span *ngIf="!isLoading">Create <i class="fas fa-plus"></i></span>
+            <span class="margin-right-2" *ngIf="isLoading">Creating</span>
+            <app-spinner *ngIf="isLoading" [diameter]="25"></app-spinner>
+        </div>
+    </button>
+    <button mat-flat-button color="primary" *ngIf="isEditingEvent" (click)="updateEvent()"
+        [disabled]="!createEventForm.form.valid  || isLoading">
+        <div class="flex-row-container-space-between">
+            <span *ngIf="!isLoading">Confirm <i class="fas fa-check"></i></span>
+            <span class="margin-right-2" *ngIf="isLoading">Updating</span>
+            <app-spinner *ngIf="isLoading" [diameter]="25"></app-spinner>
+        </div>
+    </button>
+</mat-dialog-actions>
